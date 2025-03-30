@@ -1,0 +1,17 @@
+{
+  "name": "am-sistemas-website",
+  "version": "1.0.0",
+  "description": "Sitio web de AM SISTEMAS - Soluciones Tecnológicas",
+  "main": "index.js",
+  "scripts": {
+    "optimize-images": "node optimize-images.js",
+    "start": "serve .",
+    "build": "npm run optimize-images"
+  },
+  "dependencies": {
+    "sharp": "^0.32.6",
+    "serve": "^14.2.1"
+  },
+  "author": "AM SISTEMAS",
+  "license": "ISC"
+} 
