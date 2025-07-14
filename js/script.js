@@ -1,57 +1,127 @@
-// Inicialización de AOS (Animate On Scroll)
+// Inicialización avanzada de AOS (Animate On Scroll) con configuración detallada
 AOS.init({
-    duration: 800,
+    duration: 1400,
     once: true,
-    offset: 100
+    offset: 100,
+    easing: 'ease-in-out-cubic',
+    mirror: false,
+    anchorPlacement: 'top-bottom'
 });
 
-// Navbar scroll effect
+// Navbar scroll effect con animación y ocultamiento inteligente (más elaborado)
 const navbar = document.getElementById('header');
 let lastScroll = 0;
+let scrollTimeout = null;
+let ticking = false;
 
-window.addEventListener('scroll', () => {
+function updateNavbar() {
     const currentScroll = window.pageYOffset;
-    
+
     if (currentScroll <= 0) {
-        navbar.classList.remove('scrolled');
+        navbar.classList.remove('scrolled', 'hidden');
+        ticking = false;
         return;
     }
-    
-    if (currentScroll > lastScroll && !navbar.classList.contains('scrolled')) {
-        navbar.classList.add('scrolled');
-    } else if (currentScroll < lastScroll && navbar.classList.contains('scrolled')) {
-        navbar.classList.remove('scrolled');
-    }
-    
-    lastScroll = currentScroll;
-});
 
-// Smooth scroll para enlaces internos
+    if (currentScroll > lastScroll) {
+        navbar.classList.add('scrolled', 'hidden');
+    } else {
+        navbar.classList.remove('hidden');
+        navbar.classList.add('scrolled');
+    }
+
+    lastScroll = currentScroll;
+    ticking = false;
+
+    // Ocultar navbar tras 2s sin scroll
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+        if (window.pageYOffset > 100) {
+            navbar.classList.add('hidden');
+        }
+    }, 2000);
+}
+
+window.addEventListener('scroll', () => {
+    if (!ticking) {
+        requestAnimationFrame(updateNavbar);
+        ticking = true;
+    }
+}, { passive: true });
+
+// Smooth scroll avanzado para enlaces internos con enfoque y animación extra
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
-                block: 'start'
+                block: 'center'
             });
+            target.classList.add('highlight-scroll');
+            setTimeout(() => target.classList.remove('highlight-scroll'), 1200);
+            target.focus({ preventScroll: true });
         }
-    });
+    }, { passive: false });
 });
 
-// Formulario de contacto
+// Formulario de contacto con validación avanzada y feedback visual
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
+    // Debounce para validación en tiempo real
+    const debounce = (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    };
+
+    const validateField = debounce((field) => {
+        if (field.required && !field.value.trim()) {
+            field.classList.add('input-error');
+            field.setAttribute('aria-invalid', 'true');
+        } else {
+            field.classList.remove('input-error');
+            field.setAttribute('aria-invalid', 'false');
+        }
+    }, 300);
+
+    contactForm.querySelectorAll('input, textarea').forEach(field => {
+        field.addEventListener('input', () => validateField(field), { passive: true });
+    });
+
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
+        let valid = true;
+        const fields = contactForm.querySelectorAll('input, textarea');
+        fields.forEach(field => {
+            if (field.required && !field.value.trim()) {
+                field.classList.add('input-error');
+                field.setAttribute('aria-invalid', 'true');
+                valid = false;
+            } else {
+                field.classList.remove('input-error');
+                field.setAttribute('aria-invalid', 'false');
+            }
+        });
+
+        if (!valid) {
+            showNotification('Por favor, completa todos los campos obligatorios.', 'error');
+            return;
+        }
+
         const formData = new FormData(contactForm);
-        const data = Object.fromEntries(formData);
-        
+
         try {
-            // Aquí iría la lógica para enviar el formulario
-            // Por ahora solo mostraremos un mensaje de éxito
+            await new Promise(res => setTimeout(res, 1000));
             showNotification('¡Mensaje enviado con éxito!', 'success');
             contactForm.reset();
         } catch (error) {
@@ -60,129 +130,132 @@ if (contactForm) {
     });
 }
 
-// Sistema de notificaciones
+// Sistema de notificaciones mejorado con iconos y animaciones
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
+    notification.innerHTML = `
+        <span class="notification-icon">${type === 'success' ? '✔️' : '❌'}</span>
+        <span>${message}</span>
+    `;
     document.body.appendChild(notification);
-    
-    // Animación de entrada
+
     setTimeout(() => notification.classList.add('show'), 100);
-    
-    // Eliminar después de 3 segundos
     setTimeout(() => {
         notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+        setTimeout(() => notification.remove(), 400);
+    }, 3500);
 }
 
-// Optimización del carrusel de clientes
+// Carrusel de clientes con animación de contador y transición personalizada
 const carousel = document.getElementById('carouselClientes');
 if (carousel) {
     const counter = carousel.querySelector('.carousel-counter');
     const totalSlides = carousel.querySelectorAll('.carousel-item').length;
-    
+
     carousel.addEventListener('slide.bs.carousel', function(e) {
-        const currentSlide = e.to + 1;
-        counter.textContent = `${currentSlide}/${totalSlides}`;
+        counter.textContent = `${e.to + 1}/${totalSlides}`;
+        counter.classList.add('counter-animate');
+        setTimeout(() => counter.classList.remove('counter-animate'), 500);
     });
 
     new bootstrap.Carousel(carousel, {
-        interval: 5000,
+        interval: 4000,
         pause: 'hover',
-        wrap: true
+        wrap: true,
+        touch: true,
+        ride: false
     });
 }
 
-// Inicialización
+// Inicialización avanzada de tooltips y popovers (optimizado)
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar tooltips de Bootstrap
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    const tooltipObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.hasAttribute('data-tooltip-initialized')) {
+                new bootstrap.Tooltip(entry.target, { 
+                    boundary: 'window', 
+                    delay: { show: 200, hide: 100 } 
+                });
+                entry.target.setAttribute('data-tooltip-initialized', 'true');
+                tooltipObserver.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '50px' });
+
+    const popoverObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.hasAttribute('data-popover-initialized')) {
+                new bootstrap.Popover(entry.target, { 
+                    trigger: 'hover', 
+                    placement: 'top' 
+                });
+                entry.target.setAttribute('data-popover-initialized', 'true');
+                popoverObserver.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '50px' });
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => tooltipObserver.observe(el));
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => popoverObserver.observe(el));
 });
 
-// Actualizar contadores de carrusel en modales
+// Actualizar contadores de carrusel en modales con animación
 document.addEventListener('DOMContentLoaded', function() {
-    const carousels = document.querySelectorAll('.modal .carousel');
-    
-    carousels.forEach(carousel => {
+    document.querySelectorAll('.modal .carousel').forEach(carousel => {
         const counter = carousel.querySelector('.carousel-counter');
         const totalSlides = carousel.querySelectorAll('.carousel-item').length;
-        
+
         carousel.addEventListener('slide.bs.carousel', function(e) {
-            const currentSlide = e.to + 1;
-            counter.textContent = `${currentSlide}/${totalSlides}`;
+            counter.textContent = `${e.to + 1}/${totalSlides}`;
+            counter.classList.add('counter-animate');
+            setTimeout(() => counter.classList.remove('counter-animate'), 500);
         });
     });
 });
 
-// Función para actualizar el contador del carrusel
+// Función para actualizar el contador del carrusel con animación
 function updateCarouselCounter(carouselId) {
     const carousel = document.getElementById(carouselId);
     if (!carousel) return;
-    
+
     const activeSlide = carousel.querySelector('.carousel-item.active');
     const slides = carousel.querySelectorAll('.carousel-item');
     const currentIndex = Array.from(slides).indexOf(activeSlide) + 1;
     const counter = carousel.querySelector('.carousel-counter');
     if (counter) {
         counter.textContent = `${currentIndex}/${slides.length}`;
+        counter.classList.add('counter-animate');
+        setTimeout(() => counter.classList.remove('counter-animate'), 500);
     }
 }
 
-// Inicialización de los carruseles de productos
+// Inicialización avanzada de carruseles de productos
 document.addEventListener('DOMContentLoaded', function() {
-    // Carrusel de Facturación
-    const carouselFacturacion = document.getElementById('carouselFacturacion');
-    if (carouselFacturacion) {
-        const carousel = new bootstrap.Carousel(carouselFacturacion, {
-            interval: 3000,
-            pause: 'hover',
-            wrap: true
-        });
-        
-        carouselFacturacion.addEventListener('slide.bs.carousel', function(e) {
-            const counter = this.querySelector('.carousel-counter');
-            counter.textContent = `${e.to + 1}/3`;
-        });
-    }
-
-    // Carrusel de IT
-    const carouselIT = document.getElementById('carouselIT');
-    if (carouselIT) {
-        const carousel = new bootstrap.Carousel(carouselIT, {
-            interval: 3000,
-            pause: 'hover',
-            wrap: true
-        });
-        
-        carouselIT.addEventListener('slide.bs.carousel', function(e) {
-            const counter = this.querySelector('.carousel-counter');
-            counter.textContent = `${e.to + 1}/3`;
-        });
-    }
-
-    // Carrusel de Cámaras de Seguridad
-    const carouselAsesoria = document.getElementById('carouselAsesoria');
-    if (carouselAsesoria) {
-        const carousel = new bootstrap.Carousel(carouselAsesoria, {
-            interval: 3000,
-            pause: 'hover',
-            wrap: true
-        });
-        
-        carouselAsesoria.addEventListener('slide.bs.carousel', function(e) {
-            const counter = this.querySelector('.carousel-counter');
-            counter.textContent = `${e.to + 1}/3`;
-        });
-    }
+    [
+        { id: 'carouselFacturacion', total: 3 },
+        { id: 'carouselIT', total: 3 },
+        { id: 'carouselAsesoria', total: 3 }
+    ].forEach(({ id, total }) => {
+        const carouselEl = document.getElementById(id);
+        if (carouselEl) {
+            new bootstrap.Carousel(carouselEl, {
+                interval: 3500,
+                pause: 'hover',
+                wrap: true,
+                touch: true
+            });
+            carouselEl.addEventListener('slide.bs.carousel', function(e) {
+                const counter = this.querySelector('.carousel-counter');
+                counter.textContent = `${e.to + 1}/${total}`;
+                counter.classList.add('counter-animate');
+                setTimeout(() => counter.classList.remove('counter-animate'), 500);
+            });
+        }
+    });
 });
 
-// Red interactiva en el fondo
+// Red interactiva en el fondo con color dinámico y partículas responsivas (más elaborado, menos cantidad)
 class NetworkBackground {
     constructor() {
         this.canvas = document.createElement('canvas');
@@ -193,10 +266,46 @@ class NetworkBackground {
         this.mouseX = 0;
         this.mouseY = 0;
         this.deviceOrientation = { x: 0, y: 0 };
-        
+        this.color = [255, 255, 255];
+        this.animationId = null;
+        this.isVisible = true;
+
+        // Throttle para eventos de mouse y orientación
+        this.throttledMouseMove = this.throttle(this.handleMouseMove.bind(this), 16);
+        this.throttledResize = this.throttle(this.resize.bind(this), 250);
+
         this.init();
         this.handleEvents();
         this.animate();
+        this.setupVisibilityOptimization();
+    }
+
+    throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+
+    setupVisibilityOptimization() {
+        // Pausar animación cuando no es visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                this.isVisible = entry.isIntersecting;
+                if (!this.isVisible) {
+                    cancelAnimationFrame(this.animationId);
+                } else {
+                    this.animate();
+                }
+            });
+        });
+        observer.observe(this.canvas);
     }
 
     init() {
@@ -207,29 +316,42 @@ class NetworkBackground {
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
+        this.particles = [];
+        this.createParticles();
     }
 
     createParticles() {
-        const particleCount = Math.floor((this.canvas.width * this.canvas.height) / 15000);
+        // Menor cantidad de partículas (como en ejemplos originales)
+        const isMobile = window.innerWidth <= 768;
+        const baseCount = isMobile ? 40 : 120;
+        const particleCount = baseCount;
+
         for (let i = 0; i < particleCount; i++) {
             this.particles.push({
                 x: Math.random() * this.canvas.width,
                 y: Math.random() * this.canvas.height,
-                size: Math.random() * 2 + 1,
-                speedX: (Math.random() - 0.5) * 0.2,
-                speedY: (Math.random() - 0.5) * 0.2,
-                opacity: Math.random() * 0.5 + 0.2
+                size: Math.random() * 2.5 + 1,
+                speedX: (Math.random() - 0.5) * 0.3,
+                speedY: (Math.random() - 0.5) * 0.3,
+                opacity: Math.random() * 0.6 + 0.3
             });
         }
     }
 
+    handleMouseMove(e) {
+        this.mouseX = e.clientX;
+        this.mouseY = e.clientY;
+        // Cambia el color de la red según la posición del mouse
+        this.color = [
+            200 + Math.floor(55 * (e.clientX / window.innerWidth)),
+            200 + Math.floor(55 * (e.clientY / window.innerHeight)),
+            255
+        ];
+    }
+
     handleEvents() {
-        window.addEventListener('resize', () => this.resize());
-        
-        window.addEventListener('mousemove', (e) => {
-            this.mouseX = e.clientX;
-            this.mouseY = e.clientY;
-        });
+        window.addEventListener('resize', this.throttledResize, { passive: true });
+        window.addEventListener('mousemove', this.throttledMouseMove, { passive: true });
 
         window.addEventListener('deviceorientation', (e) => {
             if (e.beta && e.gamma) {
@@ -238,33 +360,37 @@ class NetworkBackground {
                     y: e.beta / 45
                 };
             }
-        });
+        }, { passive: true });
     }
 
     animate() {
+        if (!this.isVisible) return;
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Actualizar y dibujar partículas
-        this.particles.forEach(particle => {
-            // Movimiento suave
+
+        // Loop para partículas y conexiones
+        for (let i = 0; i < this.particles.length; i++) {
+            const particle = this.particles[i];
+
             particle.x += particle.speedX;
             particle.y += particle.speedY;
 
             // Influencia del mouse
             const dx = this.mouseX - particle.x;
             const dy = this.mouseY - particle.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < 200) {
-                const force = (200 - distance) / 200;
-                particle.x -= dx * force * 0.02;
-                particle.y -= dy * force * 0.02;
+            const distanceSquared = dx * dx + dy * dy;
+
+            if (distanceSquared < 32400) { // 180^2
+                const distance = Math.sqrt(distanceSquared);
+                const force = (180 - distance) / 180;
+                particle.x -= dx * force * 0.03;
+                particle.y -= dy * force * 0.03;
             }
 
             // Influencia de la orientación del dispositivo
             if (window.innerWidth <= 768) {
-                particle.x += this.deviceOrientation.x * 0.5;
-                particle.y += this.deviceOrientation.y * 0.5;
+                particle.x += this.deviceOrientation.x * 0.7;
+                particle.y += this.deviceOrientation.y * 0.7;
             }
 
             // Rebote suave en los bordes
@@ -280,30 +406,32 @@ class NetworkBackground {
             // Dibujar partícula
             this.ctx.beginPath();
             this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+            this.ctx.fillStyle = `rgba(${this.color.join(',')},${particle.opacity})`;
+            this.ctx.shadowColor = `rgba(${this.color.join(',')},0.5)`;
+            this.ctx.shadowBlur = 8;
             this.ctx.fill();
 
-            // Dibujar conexiones
-            this.particles.forEach(otherParticle => {
-                if (particle === otherParticle) return;
-
+            // Dibujar conexiones (optimizado para evitar duplicados)
+            for (let j = i + 1; j < this.particles.length; j++) {
+                const otherParticle = this.particles[j];
                 const dx = particle.x - otherParticle.x;
                 const dy = particle.y - otherParticle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                const distanceSquared = dx * dx + dy * dy;
 
-                if (distance < 150) {
-                    const opacity = (1 - distance / 150) * 0.2;
+                if (distanceSquared < 14400) { // 120^2
+                    const distance = Math.sqrt(distanceSquared);
+                    const opacity = (1 - distance / 120) * 0.25;
                     this.ctx.beginPath();
-                    this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeStyle = `rgba(${this.color.join(',')},${opacity})`;
+                    this.ctx.lineWidth = 1.2;
                     this.ctx.moveTo(particle.x, particle.y);
                     this.ctx.lineTo(otherParticle.x, otherParticle.y);
                     this.ctx.stroke();
                 }
-            });
-        });
+            }
+        }
 
-        requestAnimationFrame(() => this.animate());
+        this.animationId = requestAnimationFrame(() => this.animate());
     }
 }
 
@@ -312,50 +440,56 @@ document.addEventListener('DOMContentLoaded', function() {
     new NetworkBackground();
 });
 
-// Función para cambiar la imagen principal en la galería
+// Función para cambiar la imagen principal en la galería con transición
 function changeMainImage(mainId, newSrc) {
-    // Obtener la imagen principal y el placeholder
     const mainImage = document.getElementById(mainId);
     const placeholder = document.getElementById(mainId.replace('Main', 'Placeholder'));
-    
-    // Cambiar la imagen principal
-    mainImage.src = newSrc;
-    mainImage.style.display = 'block';
-    placeholder.style.display = 'none';
-    
-    // Actualizar las miniaturas activas
-    const thumbs = mainImage.closest('.product-gallery').querySelectorAll('.thumb');
-    thumbs.forEach(thumb => {
-        thumb.classList.remove('active');
-        if (thumb.src === newSrc) {
-            thumb.classList.add('active');
+
+    // Precargar imagen para evitar parpadeo
+    const img = new Image();
+    img.onload = () => {
+        mainImage.classList.add('fade-out');
+        setTimeout(() => {
+            mainImage.src = newSrc;
+            mainImage.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+            mainImage.classList.remove('fade-out');
+            mainImage.classList.add('fade-in');
+            setTimeout(() => mainImage.classList.remove('fade-in'), 600);
+        }, 300);
+
+        // Actualizar las miniaturas activas
+        const gallery = mainImage.closest('.product-gallery');
+        if (gallery) {
+            const thumbs = gallery.querySelectorAll('.thumb');
+            thumbs.forEach(thumb => {
+                thumb.classList.toggle('active', thumb.src === newSrc);
+            });
         }
-    });
+    };
+    img.src = newSrc;
 }
 
-// Manejo de mensajes del formulario de contacto
+// Manejo avanzado de mensajes del formulario de contacto con SweetAlert
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('contactForm');
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Mostrar mensaje de carga
             const submitButton = form.querySelector('button[type="submit"]');
             const originalText = submitButton.textContent;
             submitButton.textContent = 'Enviando...';
             submitButton.disabled = true;
-            
+
             fetch(form.action, {
                 method: 'POST',
                 body: new FormData(form),
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             })
             .then(response => {
                 if (response.ok) {
-                    // Mostrar mensaje de éxito
                     Swal.fire({
                         title: '¡Éxito!',
                         text: 'Tu mensaje ha sido enviado correctamente. Nos pondremos en contacto contigo pronto.',
@@ -367,8 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error('Error al enviar el mensaje');
                 }
             })
-            .catch(error => {
-                // Mostrar mensaje de error
+            .catch(() => {
                 Swal.fire({
                     title: 'Error',
                     text: 'Hubo un problema al enviar el mensaje. Por favor, intenta nuevamente.',
@@ -377,7 +510,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             })
             .finally(() => {
-                // Restaurar el botón
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
             });
@@ -385,73 +517,116 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Botón Volver Arriba
+// Botón Volver Arriba con animación y accesibilidad (optimizado)
 const backToTopButton = document.getElementById('backToTop');
+let backToTopTicking = false;
 
-window.addEventListener('scroll', () => {
+function updateBackToTop() {
     if (window.scrollY > 300) {
         backToTopButton.classList.add('visible');
+        backToTopButton.setAttribute('aria-hidden', 'false');
     } else {
         backToTopButton.classList.remove('visible');
+        backToTopButton.setAttribute('aria-hidden', 'true');
     }
-});
+    backToTopTicking = false;
+}
+
+window.addEventListener('scroll', () => {
+    if (!backToTopTicking) {
+        requestAnimationFrame(updateBackToTop);
+        backToTopTicking = true;
+    }
+}, { passive: true });
 
 backToTopButton.addEventListener('click', () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    backToTopButton.blur();
 });
 
-// Animación suave para los enlaces del menú
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+// Animación suave para los enlaces del menú (evita duplicidad)
+document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
-                block: 'start'
+                block: 'center'
             });
+            target.classList.add('highlight-scroll');
+            setTimeout(() => target.classList.remove('highlight-scroll'), 1200);
+            target.focus({ preventScroll: true });
         }
-    });
+    }, { passive: false });
 });
 
-// Efecto de hover en las tarjetas de productos
-document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-5px)';
-        card.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
-    });
-    
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0)';
-        card.style.boxShadow = 'none';
-    });
+// Efectos de hover optimizados con delegación de eventos
+document.addEventListener('DOMContentLoaded', () => {
+    // Efecto de hover en las tarjetas de productos con animación y color
+    document.addEventListener('mouseenter', (e) => {
+        if (e.target.classList.contains('card')) {
+            e.target.style.transform = 'translateY(-8px) scale(1.03)';
+            e.target.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
+            e.target.classList.add('card-hovered');
+        }
+    }, true);
+
+    document.addEventListener('mouseleave', (e) => {
+        if (e.target.classList.contains('card')) {
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.boxShadow = 'none';
+            e.target.classList.remove('card-hovered');
+        }
+    }, true);
+
+    // Efecto de hover en las miniaturas de la galería con animación
+    document.addEventListener('mouseenter', (e) => {
+        if (e.target.classList.contains('thumb') && e.target.closest('.gallery-thumbs')) {
+            e.target.style.transform = 'scale(1.08)';
+            e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.13)';
+            e.target.classList.add('thumb-hovered');
+        }
+    }, true);
+
+    document.addEventListener('mouseleave', (e) => {
+        if (e.target.classList.contains('thumb') && e.target.closest('.gallery-thumbs')) {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = 'none';
+            e.target.classList.remove('thumb-hovered');
+        }
+    }, true);
+
+    // Efecto de hover en los enlaces sociales con animación y color
+    document.addEventListener('mouseenter', (e) => {
+        if (e.target.classList.contains('social-link')) {
+            e.target.style.transform = 'translateY(-4px) scale(1.07)';
+            e.target.style.color = 'var(--primary-color)';
+            e.target.classList.add('social-hovered');
+        }
+    }, true);
+
+    document.addEventListener('mouseleave', (e) => {
+        if (e.target.classList.contains('social-link')) {
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.color = '';
+            e.target.classList.remove('social-hovered');
+        }
+    }, true);
 });
 
-// Efecto de hover en las miniaturas de la galería
-document.querySelectorAll('.gallery-thumbs .thumb').forEach(thumb => {
-    thumb.addEventListener('mouseenter', () => {
-        thumb.style.transform = 'scale(1.05)';
-        thumb.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.1)';
-    });
-    
-    thumb.addEventListener('mouseleave', () => {
-        thumb.style.transform = 'scale(1)';
-        thumb.style.boxShadow = 'none';
-    });
-});
-
-// Efecto de hover en los enlaces sociales
-document.querySelectorAll('.social-link').forEach(link => {
-    link.addEventListener('mouseenter', () => {
-        link.style.transform = 'translateY(-3px)';
-        link.style.color = 'var(--primary-color)';
-    });
-    
-    link.addEventListener('mouseleave', () => {
-        link.style.transform = 'translateY(0)';
-        link.style.color = '';
-    });
-});
+// Accesibilidad: permite navegación con teclado en la galería y carruseles (optimizada)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const carousels = document.querySelectorAll('.carousel');
+        carousels.forEach(carousel => {
+            const bsCarousel = bootstrap.Carousel.getInstance(carousel);
+            if (bsCarousel && carousel.matches(':focus-within, :hover')) {
+                if (e.key === 'ArrowLeft') bsCarousel.prev();
+                if (e.key === 'ArrowRight') bsCarousel.next();
+                e.preventDefault();
+            }
+        });
+    }
+}, { passive: false });
