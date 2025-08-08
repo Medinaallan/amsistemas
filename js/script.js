@@ -566,7 +566,7 @@ document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
 document.addEventListener('DOMContentLoaded', () => {
     // Efecto de hover en las tarjetas de productos con animación y color
     document.addEventListener('mouseenter', (e) => {
-        if (e.target.classList.contains('card')) {
+        if (e.target && e.target.classList && e.target.classList.contains('card')) {
             e.target.style.transform = 'translateY(-8px) scale(1.03)';
             e.target.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
             e.target.classList.add('card-hovered');
@@ -574,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, true);
 
     document.addEventListener('mouseleave', (e) => {
-        if (e.target.classList.contains('card')) {
+        if (e.target && e.target.classList && e.target.classList.contains('card')) {
             e.target.style.transform = 'translateY(0) scale(1)';
             e.target.style.boxShadow = 'none';
             e.target.classList.remove('card-hovered');
@@ -583,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Efecto de hover en las miniaturas de la galería con animación
     document.addEventListener('mouseenter', (e) => {
-        if (e.target.classList.contains('thumb') && e.target.closest('.gallery-thumbs')) {
+        if (e.target && e.target.classList && e.target.classList.contains('thumb') && e.target.closest('.gallery-thumbs')) {
             e.target.style.transform = 'scale(1.08)';
             e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.13)';
             e.target.classList.add('thumb-hovered');
@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, true);
 
     document.addEventListener('mouseleave', (e) => {
-        if (e.target.classList.contains('thumb') && e.target.closest('.gallery-thumbs')) {
+        if (e.target && e.target.classList && e.target.classList.contains('thumb') && e.target.closest('.gallery-thumbs')) {
             e.target.style.transform = 'scale(1)';
             e.target.style.boxShadow = 'none';
             e.target.classList.remove('thumb-hovered');
@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Efecto de hover en los enlaces sociales con animación y color
     document.addEventListener('mouseenter', (e) => {
-        if (e.target.classList.contains('social-link')) {
+        if (e.target && e.target.classList && e.target.classList.contains('social-link')) {
             e.target.style.transform = 'translateY(-4px) scale(1.07)';
             e.target.style.color = 'var(--primary-color)';
             e.target.classList.add('social-hovered');
@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, true);
 
     document.addEventListener('mouseleave', (e) => {
-        if (e.target.classList.contains('social-link')) {
+        if (e.target && e.target.classList && e.target.classList.contains('social-link')) {
             e.target.style.transform = 'translateY(0) scale(1)';
             e.target.style.color = '';
             e.target.classList.remove('social-hovered');
