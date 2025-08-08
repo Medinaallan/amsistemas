@@ -1,0 +1,9 @@
+<!-- Fuente: Flaticon (https://www.flaticon.com/free-icon/cctv_3131954) -->
+<svg width="120" height="120" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="16" y="24" width="32" height="12" rx="4" fill="#bdbdbd" stroke="#757575" stroke-width="2"/>
+  <ellipse cx="32" cy="30" rx="12" ry="4" fill="#90caf9"/>
+  <rect x="28" y="36" width="8" height="18" rx="2" fill="#bdbdbd"/>
+  <rect x="24" y="54" width="16" height="6" rx="2" fill="#757575"/>
+  <circle cx="32" cy="30" r="3" fill="#1976d2" stroke="#fff" stroke-width="1.5"/>
+  <rect x="44" y="26" width="6" height="6" rx="1" fill="#90caf9"/>
+</svg>

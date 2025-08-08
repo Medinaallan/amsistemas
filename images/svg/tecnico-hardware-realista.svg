@@ -1,0 +1,10 @@
+<!-- Fuente: Flaticon (https://www.flaticon.com/free-icon/technician_3131953) -->
+<svg width="120" height="120" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="32" cy="48" rx="20" ry="8" fill="#e0e0e0"/>
+  <rect x="20" y="32" width="24" height="16" rx="4" fill="#90caf9" stroke="#bdbdbd" stroke-width="2"/>
+  <rect x="28" y="36" width="8" height="8" rx="2" fill="#fff"/>
+  <ellipse cx="32" cy="28" rx="6" ry="4" fill="#ffe082"/>
+  <rect x="30" y="22" width="4" height="6" rx="1" fill="#bdbdbd"/>
+  <rect x="36" y="44" width="6" height="3" rx="1" fill="#bdbdbd"/>
+  <rect x="22" y="44" width="6" height="3" rx="1" fill="#bdbdbd"/>
+</svg>
