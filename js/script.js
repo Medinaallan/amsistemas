@@ -321,9 +321,9 @@ class NetworkBackground {
     }
 
     createParticles() {
-        // Menor cantidad de partículas (como en ejemplos originales)
+        // Optimización: Reducir partículas para mejor rendimiento
         const isMobile = window.innerWidth <= 768;
-        const baseCount = isMobile ? 40 : 120;
+        const baseCount = isMobile ? 20 : 50; // Reducido de 40:120 a 20:50
         const particleCount = baseCount;
 
         for (let i = 0; i < particleCount; i++) {
@@ -630,3 +630,75 @@ document.addEventListener('keydown', function(e) {
         });
     }
 }, { passive: false });
+
+// Contador animado para las estadísticas
+class AnimatedCounter {
+    constructor() {
+        this.counters = document.querySelectorAll('.counter[data-target]');
+        this.hasAnimated = false;
+        this.init();
+    }
+
+    init() {
+        // Crear observer para detectar cuando la sección entra en vista
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.hasAnimated) {
+                    this.hasAnimated = true;
+                    this.animateCounters();
+                }
+            });
+        }, {
+            threshold: 0.3 // Se activa cuando 30% de la sección es visible
+        });
+
+        // Observar la sección de estadísticas
+        const statsSection = document.getElementById('estadisticas');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+    }
+
+    animateCounters() {
+        this.counters.forEach(counter => {
+            this.animateCounter(counter);
+        });
+    }
+
+    animateCounter(element) {
+        const target = parseInt(element.getAttribute('data-target'));
+        const suffix = element.getAttribute('data-suffix') || '';
+        const duration = 2000; // Duración de 2 segundos
+        const startTime = performance.now();
+
+        const updateCounter = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Función de easing para animación suave
+            const easedProgress = this.easeOutQuart(progress);
+            const currentValue = Math.floor(easedProgress * target);
+            
+            element.textContent = currentValue + suffix;
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                // Asegurar que muestre el valor final exacto
+                element.textContent = target + suffix;
+            }
+        };
+
+        requestAnimationFrame(updateCounter);
+    }
+
+    // Función de easing para una animación más natural
+    easeOutQuart(t) {
+        return 1 - Math.pow(1 - t, 4);
+    }
+}
+
+// Inicializar contador animado cuando el documento esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new AnimatedCounter();
+});
