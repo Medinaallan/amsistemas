@@ -349,12 +349,10 @@ body {
 #carouselClientes .carousel-item img {
     max-width: 200px;
     height: auto;
-    filter: grayscale(100%);
     transition: all var(--transition-speed);
 }
 
 #carouselClientes .carousel-item img:hover {
-    filter: grayscale(0%);
     transform: scale(1.1);
 }
 
