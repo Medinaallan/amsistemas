@@ -702,3 +702,57 @@ class AnimatedCounter {
 document.addEventListener('DOMContentLoaded', () => {
     new AnimatedCounter();
 });
+
+// --- Seguimiento de eventos para Google Analytics y notificaciones ---
+// Throttle simple para evitar notificaciones repetidas en sucesos muy cercanos
+const _eventTimestamps = {};
+function _canSendEvent(key, cooldown = 3000) {
+    const now = Date.now();
+    if (!_eventTimestamps[key] || (now - _eventTimestamps[key]) > cooldown) {
+        _eventTimestamps[key] = now;
+        return true;
+    }
+    return false;
+}
+
+function sendGtagEvent(action, category = 'interaction', label = '') {
+    try {
+        if (typeof gtag === 'function') {
+            gtag('event', action, { event_category: category, event_label: label });
+        } else if (window.dataLayer && Array.isArray(window.dataLayer)) {
+            window.dataLayer.push({ event: action, event_category: category, event_label: label });
+        }
+    } catch (err) {
+        // silencioso: analytics no disponible o bloqueado
+        // console.debug('gtag send error', err);
+    }
+}
+
+// Evento: interacción con cualquier galería de producto
+document.addEventListener('click', function (e) {
+    const gallery = e.target.closest('.product-gallery');
+    if (!gallery) return;
+
+    const key = 'gallery_click_' + (gallery.dataset.galleryName || 'generic');
+    if (!_canSendEvent(key, 2000)) return;
+
+    const label = gallery.dataset.galleryName || gallery.id || 'product-gallery';
+    sendGtagEvent('gallery_click', 'gallery', label);
+    showNotification('Interacción con galería registrada', 'success');
+}, true);
+
+// Evento: foco en inputs de tipo texto (formularios)
+document.addEventListener('focusin', function (e) {
+    const tgt = e.target;
+    if (!tgt) return;
+    if (tgt.tagName === 'INPUT' && (tgt.type === 'text' || tgt.type === 'email' || tgt.type === 'tel' || tgt.type === 'search')) {
+        const label = tgt.name || tgt.id || tgt.placeholder || 'input-text';
+        const key = 'input_focus_' + label;
+        if (!_canSendEvent(key, 1500)) return;
+
+        sendGtagEvent('form_input_focus', 'form', label);
+        showNotification(`Campo enfocado: ${label}`, 'success');
+    }
+}, true);
+
+// --- Fin de tracking enhancements ---
