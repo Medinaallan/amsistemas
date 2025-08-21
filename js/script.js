@@ -160,11 +160,11 @@ if (carousel) {
     });
 
     new bootstrap.Carousel(carousel, {
-        interval: 4000,
+        interval: 1500,
         pause: 'hover',
         wrap: true,
         touch: true,
-        ride: false
+        ride: 'carousel'
     });
 }
 
